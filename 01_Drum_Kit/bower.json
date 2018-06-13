@@ -1,0 +1,22 @@
+{
+  "name": "01 - PureScript Drum Kit",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+    "purescript-prelude": "^4.0.0",
+    "purescript-console": "^4.0.0",
+    "purescript-effect": "^2.0.0",
+    "purescript-smolder": "joncfoo/purescript-smolder#update-for-0.12.0",
+    "purescript-web-dom": "^1.0.0",
+    "purescript-smolder-dom": "^2.0.0",
+    "purescript-foldable-traversable": "^4.0.0",
+    "purescript-newtype": "^3.0.0"
+  },
+  "devDependencies": {
+    "purescript-psci-support": "^4.0.0"
+  }
+}

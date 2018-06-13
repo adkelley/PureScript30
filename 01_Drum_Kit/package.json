@@ -1,0 +1,23 @@
+{
+  "name": "purescript30",
+  "version": "0.1.0",
+  "description": "A Port of Wes Boss' JavaScript30 examples to PureScript.",
+  "main": "",
+  "scripts": {
+    "build:clean": "rm -rf output dist */output",
+    "build:01": "pulp browserify --main DrumKit --to 01_Drum_Kit/output/bundle.js -I ./01_Drum_Kit",
+    "exec:01": "cd 01_Drum_Kit/ && python -m SimpleHTTPServer 8000",
+    "install": "bower install"
+  },
+  "private": true,
+  "author": [
+    {
+      "name": "Alex Kelley",
+      "email": "",
+      "url": "https://github.com/adkelley"
+    }
+  ],
+  "license": "MIT",
+  "devDependencies": {
+  }
+}

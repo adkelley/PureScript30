@@ -1,0 +1,18 @@
+{
+  "name": "02",
+  "set": "psc-0.12.0-20180603",
+  "source": "https://github.com/purescript/package-sets.git",
+  "depends": [
+    "effect",
+    "web-dom",
+    "web-html",
+    "prelude",
+    "newtype",
+    "transformers",
+    "numbers",
+    "psci-support",
+    "js-timers",
+    "js-date",
+    "exceptions"
+  ]
+}

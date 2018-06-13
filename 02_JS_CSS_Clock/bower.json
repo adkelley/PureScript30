@@ -1,0 +1,24 @@
+{
+  "name": "02",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+    "purescript-prelude": "^4.0.1",
+    "purescript-effect": "^2.0.0",
+    "purescript-web-dom": "^1.0.0",
+    "purescript-web-html": "^1.0.0",
+    "purescript-newtype": "^3.0.0",
+    "purescript-transformers": "^4.1.0",
+    "purescript-exceptions": "4.0.0",
+    "purescript-js-timers": "^4.0.0",
+    "purescript-numbers": "^6.0.0",
+    "purescript-js-date": "^6.0.0"
+  },
+  "devDependencies": {
+    "purescript-psci-support": "^4.0.0"
+  }
+}
