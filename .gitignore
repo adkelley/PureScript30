@@ -1,8 +1,7 @@
-/bower_components/
-/node_modules/
-/.pulp-cache/
-/output/
-/.psc*
-/.psa*
+*/bower_components/
+*/node_modules/
+*/.pulp-cache/
+*/output/
+*/.psc*
 .DS_Store
 */README.oo3/
