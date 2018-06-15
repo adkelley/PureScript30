@@ -3,5 +3,6 @@
 */.pulp-cache/
 */output/
 */.psc*
+*/.psa*
 .DS_Store
 */README.oo3/
