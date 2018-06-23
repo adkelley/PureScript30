@@ -23,3 +23,12 @@ exports.playAudio = function (audioElement) {
     return {};
   };
 };
+
+exports.setInnerHTML = function(eventTarget) {
+  return function (html) {
+    return function () {
+      eventTarget.innerHTML = html;
+      return {};
+    };
+  };
+};

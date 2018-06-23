@@ -1,0 +1,17 @@
+{
+  "name": "purescript30",
+  "version": "0.1.0",
+  "description": "A Port of Wes Boss' JavaScript30 examples to PureScript. See https://github.com/wesbos/JavaScript30",
+  "scripts": {
+    "clean": "rm -rf */output */dist */.psc* */.pulpcache */bower_components"
+  },
+  "private": true,
+  "author": [
+    {
+      "name": "Alex Kelley",
+      "email": "",
+      "url": "https://github.com/adkelley"
+    }
+  ],
+  "license": "MIT"
+}

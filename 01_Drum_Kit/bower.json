@@ -10,9 +10,11 @@
     "purescript-prelude": "^4.0.0",
     "purescript-console": "^4.0.0",
     "purescript-effect": "^2.0.0",
-    "purescript-smolder": "joncfoo/purescript-smolder#update-for-0.12.0",
+    "purescript-smolder": "^11.0.0",
+    "purescript-web-html": "^1.0.0",
+    "purescript-web-events": "^1.0.0",
+    "purescript-web-uievents": "^1.0.0",
     "purescript-web-dom": "^1.0.0",
-    "purescript-smolder-dom": "^2.0.0",
     "purescript-foldable-traversable": "^4.0.0",
     "purescript-newtype": "^3.0.0"
   },

@@ -1,0 +1,24 @@
+{
+  "name": "06_type_ahead",
+  "version": "0.1.0",
+  "description": "A Port of Wes Boss' JavaScript30 examples to PureScript. See https://github.com/wesbos/JavaScript30",
+  "scripts": {
+    "clean": "rimraf output && rimraf dist && rimraf bower_components && rimraf .pulp-cache && rimraf .purs-repl && rimraf node_modules",
+    "build": "pulp browserify --to output/bundle.js",
+    "install": "bower install && npm install",
+    "exec": "python -m SimpleHTTPServer 8000 && open http://localhost:8000",
+    "all": "npm run clean && npm run install && npm run build && npm run exec"
+  },
+  "dependencies": {
+    "node-fetch": "^2.1.2"
+  },
+  "private": true,
+  "author": [
+    {
+      "name": "Alex Kelley",
+      "email": "",
+      "url": "https://github.com/adkelley"
+    }
+  ],
+  "license": "MIT"
+}
