@@ -10,12 +10,14 @@
     "purescript-prelude": "^4.0.1",
     "purescript-console": "^4.1.0",
     "purescript-effect": "^2.0.0",
+    "purescript-web-uievents": "^1.0.0",
     "purescript-milkis": "^6.0.0",
     "purescript-aff": "^5.0.0",
     "purescript-web-html": "^1.0.0",
     "purescript-web-dom": "^1.0.0",
     "purescript-strings": "^4.0.0",
-    "purescript-smolder": "^11.0.0"
+    "purescript-smolder": "^11.0.0",
+    "purescript-simple-json": "^4.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0"

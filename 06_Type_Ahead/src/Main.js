@@ -1,7 +1,7 @@
 "use strict";
 
-exports.innerHTML = function(html) {
-  return function (eventTarget) {
+exports.innerHTML = function(eventTarget) {
+  return function (html) {
     return function () {
       eventTarget.innerHTML = html;
       return {};

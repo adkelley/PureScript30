@@ -5,7 +5,7 @@
   "scripts": {
     "clean": "rimraf output && rimraf dist && rimraf bower_components && rimraf .pulp-cache && rimraf .purs-repl && rimraf node_modules",
     "build": "pulp browserify --to output/bundle.js",
-    "install": "bower install && npm install",
+    "install": "npm install  && bower install",
     "exec": "python -m SimpleHTTPServer 8000 && open http://localhost:8000",
     "all": "npm run clean && npm run install && npm run build && npm run exec"
   },
