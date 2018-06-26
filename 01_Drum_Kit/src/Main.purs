@@ -3,29 +3,26 @@ module DrumKit where
 import Prelude hiding (div)
 
 import Data.Foldable (for_)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (wrap)
 import Effect (Effect)
-import Effect.Console (error)
 import Effect.Exception (throw)
 import Text.Smolder.HTML (audio, div, kbd, source, span)
 import Text.Smolder.HTML.Attributes (className, data', src, type')
 import Text.Smolder.Markup (Markup, text, (!))
 import Text.Smolder.Renderer.String (render)
 import Unsafe.Coerce (unsafeCoerce)
-import Web.DOM (Node, ParentNode)
-import Web.DOM.Element (setClassName, className) as DNE
-import Web.DOM.Internal.Types (Element, NodeList)
+import Web.DOM.Element (setClassName, className, fromParentNode, toEventTarget) as WDE
+import Web.DOM.Internal.Types (Element)
 import Web.DOM.Node (toEventTarget)
 import Web.DOM.NodeList (toArray)
-import Web.DOM.NonElementParentNode (getElementById)
-import Web.DOM.ParentNode (querySelector, querySelectorAll)
+import Web.DOM.ParentNode (ParentNode, querySelector, querySelectorAll)
 import Web.Event.EventTarget (addEventListener, eventListener)
-import Web.Event.Internal.Types (Event, EventTarget)
+import Web.Event.Internal.Types (Event)
 import Web.HTML (window)
-import Web.HTML.HTMLDocument (fromNonElementParentNode, toNonElementParentNode, toParentNode)
+import Web.HTML.HTMLDocument (toParentNode)
 import Web.HTML.Window (document)
-import Web.UIEvent.KeyboardEvent (fromEvent, key)
+import Web.UIEvent.KeyboardEvent (KeyboardEvent, fromEvent, key)
 
 type AudioTag = { dataKey :: String, pathToFile :: String }
 
@@ -72,16 +69,16 @@ view = do
 
 addPlaying :: Element -> Effect Unit
 addPlaying key = do
-  name <- DNE.className key
-  DNE.setClassName (name <> " playing") key
+  name <- WDE.className key
+  WDE.setClassName (name <> " playing") key
 
 
 removePlaying :: Element → Effect Unit
-removePlaying = DNE.setClassName "key"
+removePlaying = WDE.setClassName "key"
 
 foreign import propertyName :: Event -> String
 foreign import srcElement :: Event -> Element
-foreign import setInnerHTML :: Element → String → Effect Unit
+foreign import innerHTML :: Element → String → Effect Unit
 
 removeTransition :: Event -> Effect Unit
 removeTransition e =
@@ -97,13 +94,11 @@ foreign import audioCurrentTime :: Int
 foreign import playAudio :: Element -> Effect Unit
 
 
-playSound :: Event -> Effect Unit
-playSound e = do
-  let keyboardEvent = fromEvent e
+playSound :: (Maybe KeyboardEvent) -> ParentNode → Effect Unit
+playSound keyboardEvent doc = do
   case keyboardEvent of
     Just ke → do
       let co = key ke
-      doc <- map toParentNode (window >>= document)
       audio <- querySelector (wrap ("audio[data=" <> "'" <> co <> "']")) doc
       case audio of
         Just el -> do
@@ -112,29 +107,23 @@ playSound e = do
           case key of
             Just kel -> do
               addPlaying kel
-            Nothing -> void do
-              error "No key element"
+            Nothing -> pure unit
           playAudio el
         Nothing -> pure unit
     Nothing → pure unit
 
-toEventTargets :: NodeList → Effect (Array EventTarget)
-toEventTargets nodeList = do
-  nodes ← toArray nodeList
-  pure $ map toEventTarget nodes
 
 main :: Effect Unit
 main = do
-  doc <- map toNonElementParentNode (window >>= document)
-  container <- getElementById "container" doc
+  doc <- map toParentNode (window >>= document)
+  container <- querySelector (wrap "#container") doc
   case container of
     Just el -> void $ do
-      setInnerHTML el $ render view
-      keys <- querySelectorAll (wrap ".key") (unsafeCoerce doc :: ParentNode) >>= toEventTargets
+      innerHTML el $ render view
+      keys <- querySelectorAll (wrap ".key") doc >>= toArray
       el1 ← eventListener removeTransition
-      for_  keys $ addEventListener (wrap "transitionend") el1 false
-      el2 ← eventListener playSound
-      case fromNonElementParentNode doc of
-        Just tgt → addEventListener (wrap "keydown") el2 false (toEventTarget (unsafeCoerce tgt :: Node))
-        Nothing → throw "No document object"
+      for_  keys $ \x → addEventListener (wrap "transitionend") el1 false (toEventTarget x)
+      el2 ← eventListener \e → playSound (fromEvent e) doc
+      let docTarget = WDE.toEventTarget $ fromMaybe (unsafeCoerce doc :: Element) $ WDE.fromParentNode doc
+      addEventListener (wrap "keydown") el2 false docTarget
     Nothing -> throw "No 'container' node!"

@@ -24,7 +24,7 @@ exports.playAudio = function (audioElement) {
   };
 };
 
-exports.setInnerHTML = function(eventTarget) {
+exports.innerHTML = function(eventTarget) {
   return function (html) {
     return function () {
       eventTarget.innerHTML = html;
