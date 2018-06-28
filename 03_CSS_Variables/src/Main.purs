@@ -39,7 +39,7 @@ handleUpdate e = do
 main :: Effect Unit
 main = do
   doc ← map toParentNode (window >>= document)
-  inputs ← querySelectorAll (wrap ".controls input") doc >>= toArray
+  inputs ← map toEventTarget =<< (querySelectorAll (wrap ".controls input") doc >>= toArray)
   el ← eventListener handleUpdate
   for_ inputs $ \x → addEventListener (wrap "change") el false (toEventTarget x)
   for_ inputs $ \x → addEventListener (wrap "mousemove") el false (toEventTarget x)

@@ -1,11 +1,11 @@
 {
-  "name": "07",
+  "name": "04_array_cardio_workout_day_1",
   "version": "0.1.0",
   "description": "A Port of Wes Boss' JavaScript30 examples to PureScript. See https://github.com/wesbos/JavaScript30",
   "scripts": {
     "clean": "rm -rf output dist */output .psc* .pulpcache bower_components",
-    "build": "pulp --psc-package browserify --to output/bundle.js",
-    "install": "psc-package install",
+    "build": "pulp browserify --to output/bundle.js",
+    "install": "bower install",
     "exec": "python -m SimpleHTTPServer 8000 && open http://localhost:8000"
   },
   "private": true,
