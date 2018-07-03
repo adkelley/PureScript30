@@ -16,7 +16,9 @@
     "purescript-web-uievents": "^1.0.0",
     "purescript-web-dom": "^1.0.0",
     "purescript-newtype": "^3.0.0",
-    "purescript-canvas": "^4.0.0"
+    "purescript-canvas": "^4.0.0",
+    "purescript-refs": "^4.1.0",
+    "purescript-colors": "^5.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^4.0.0"

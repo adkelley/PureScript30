@@ -7,6 +7,7 @@
     "console",
     "effect",
     "prelude",
-    "canvas"
+    "canvas",
+    "refs"
   ]
 }

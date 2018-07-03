@@ -7,3 +7,7 @@ exports.offsetX = function (mouseEvent) {
 exports.offsetY = function (mouseEvent) {
     return mouseEvent.offsetY;
 };
+
+// exports.lineWidth = function (context2D) {
+//   return context2D.lineWidth
+// }
