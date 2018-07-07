@@ -41,15 +41,12 @@ toggleActive e = do
     then toggleElement "open-active" e
     else pure false
 
-toEventTargets :: NodeList → Effect (Array EventTarget)
-toEventTargets nodeList = do
-  nodes ← toArray nodeList
-  pure $ map toEventTarget nodes
 
 main :: Effect Unit
 main = do
   doc ← map toParentNode (window >>= document)
-  panels ← querySelectorAll (wrap ".panel") doc >>= toEventTargets
+  panels ← querySelectorAll (wrap ".panel") doc >>=
+           toArray >>= (toEventTarget <$> _) >>> pure
   el1 ←  eventListener toggleOpen
   for_ panels $ addEventListener (wrap "click") el1 false
   el2 ← eventListener toggleActive

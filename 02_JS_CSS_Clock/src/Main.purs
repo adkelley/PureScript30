@@ -36,9 +36,9 @@ main :: Effect Unit
 main = do
   doc <- map toParentNode (window >>= document)
   maybeSelectors <- runMaybeT $ do
-    secondHand <- MaybeT (querySelector (wrap ".second-hand") doc)
-    minuteHand <- MaybeT (querySelector (wrap ".minute-hand") doc)
-    hourHand <- MaybeT (querySelector (wrap ".hour-hand") doc)
+    secondHand <- MaybeT $ querySelector (wrap ".second-hand") doc
+    minuteHand <- MaybeT $ querySelector (wrap ".minute-hand") doc
+    hourHand   <- MaybeT $ querySelector (wrap ".hour-hand") doc
     pure { sh : secondHand, mh : minuteHand, hh : hourHand }
   case maybeSelectors of
     Just {sh, mh, hh } -> do
