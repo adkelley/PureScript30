@@ -6,7 +6,6 @@ import Color (toHexString, hsv)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (wrap)
 import Effect (Effect)
-import Effect.Class.Console (logShow)
 import Effect.Exception (throw)
 import Effect.Ref (Ref, new, read, write)
 import Graphics.Canvas (CanvasElement, Context2D, LineCap(..), LineJoin(..), beginPath, getContext2D, lineTo, moveTo, setLineCap, setLineJoin, setLineWidth, setStrokeStyle, stroke)
@@ -32,44 +31,44 @@ type AppState = { isDrawing :: Boolean
                 , lineWidth :: Number
                 }
 
-toCanvasElement :: Element → CanvasElement
-toCanvasElement = unsafeCoerce
+fromElement :: Element → CanvasElement
+fromElement = unsafeCoerce
 
 toMouseEvent :: Event → MouseEvent
 toMouseEvent = unsafeCoerce
 
 draw :: MouseEvent → Context2D → Ref AppState → Number → Number → Effect Unit
 draw me ctx _appState ox oy = do
-  appState <- read _appState
-  if appState.isDrawing
+  appState@{isDrawing, lastX, lastY, hue, direction, lineWidth} <- read _appState
+  if isDrawing
     then do
-      setStrokeStyle ctx (toHexString $ hsv appState.hue 1.0 0.5)
+      setStrokeStyle ctx (toHexString $ hsv hue 1.0 0.5)
       beginPath ctx
-      moveTo ctx appState.lastX appState.lastY
+      moveTo ctx lastX lastY
       lineTo ctx ox oy
       stroke ctx
-      let direction =
-            if (appState.lineWidth >= 100.0 || appState.lineWidth <= 1.0)
-              then not appState.direction
-              else appState.direction
-      let lineWidth =
-            if direction
-              then appState.lineWidth + 1.0
-              else appState.lineWidth - 1.0
+      let direction_ =
+            if (lineWidth >= 100.0 || lineWidth <= 1.0)
+              then not direction
+              else direction
+      let lineWidth_ =
+            if direction_
+              then lineWidth + 1.0
+              else lineWidth - 1.0
       write { isDrawing: true
             , lastX: offsetX me
             , lastY: offsetY me
-            , hue: if appState.hue < 360.0
-                     then appState.hue + 1.0
+            , hue: if hue < 360.0
+                     then hue + 1.0
                      else 0.0
-            , direction: direction
-            , lineWidth: lineWidth
+            , direction: direction_
+            , lineWidth: lineWidth_
             } _appState
-      setLineWidth ctx lineWidth
+      setLineWidth ctx lineWidth_
     else
       pure unit
 
-initAppState :: Ref AppState
+initAppState :: Effect (Ref AppState)
 initAppState =
    new { isDrawing: false
        , lastX: 0.0
@@ -79,11 +78,22 @@ initAppState =
        , direction: true
        }
 
+modifyAppState
+  :: Event
+  →  Ref AppState
+  →  Boolean
+  →  Effect Unit
+modifyAppState e _appState isDrawing_ = do
+  let me = toMouseEvent e
+  appState ← read _appState
+  write (appState {isDrawing = isDrawing_, lastX = offsetX me, lastY = offsetY me}) _appState
+
+
 main :: Effect Unit
 main = do
   doc ← map toParentNode (window >>= document)
   _canvas ← querySelector (wrap "#draw") doc
-  case (map toCanvasElement _canvas) of
+  case (map fromElement _canvas) of
     Just canvasElement → do
       ctx ← getContext2D canvasElement
       setStrokeStyle ctx "#BADA55"
@@ -92,26 +102,10 @@ main = do
       setLineWidth ctx 100.0
       _appState <- initAppState
       el1 ← eventListener \e → do
-                 let me = toMouseEvent e
-                 draw me ctx _appState (offsetX me) (offsetY me)
-      el2 ← eventListener \e → do
-        appState <- read _appState
-        write { isDrawing: false
-              , lastX: offsetX $ toMouseEvent e
-              , lastY: offsetY $ toMouseEvent e
-              , hue: appState.hue
-              , lineWidth: appState.lineWidth
-              , direction: appState.direction
-              } _appState
-      el3 ← eventListener \e → do
-        appState <- read _appState
-        write { isDrawing: true
-              , lastX: offsetX $ toMouseEvent e
-              , lastY: offsetY $ toMouseEvent e
-              , hue: appState.hue
-              , direction: appState.direction
-              , lineWidth: appState.lineWidth
-              } _appState
+        let me = toMouseEvent e
+        draw me ctx _appState (offsetX me) (offsetY me)
+      el2 ← eventListener \e → modifyAppState e _appState false
+      el3 ← eventListener \e → modifyAppState e _appState true
       case (map toEventTarget _canvas) of
         Just canvas → do
           addEventListener (wrap "mousedown") el3 false canvas
