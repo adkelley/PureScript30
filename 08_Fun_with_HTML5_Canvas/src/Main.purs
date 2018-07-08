@@ -69,6 +69,15 @@ draw me ctx _appState ox oy = do
     else
       pure unit
 
+initAppState :: Ref AppState
+initAppState =
+   new { isDrawing: false
+       , lastX: 0.0
+       , lastY: 0.0
+       , hue: 0.0
+       , lineWidth: 100.0
+       , direction: true
+       }
 
 main :: Effect Unit
 main = do
@@ -81,13 +90,7 @@ main = do
       setLineJoin ctx RoundJoin
       setLineCap ctx Round
       setLineWidth ctx 100.0
-      _appState <- new { isDrawing: false
-                      , lastX: 0.0
-                      , lastY: 0.0
-                      , hue: 0.0
-                      , lineWidth: 100.0
-                      , direction: true
-                      }
+      _appState <- initAppState
       el1 ← eventListener \e → do
                  let me = toMouseEvent e
                  draw me ctx _appState (offsetX me) (offsetY me)
