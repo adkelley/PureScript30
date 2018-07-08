@@ -6,7 +6,6 @@ import Data.Foldable (for_)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (wrap)
 import Effect (Effect)
-import Effect.Console (error)
 import Web.DOM.Node (toEventTarget)
 import Web.DOM.NodeList (toArray)
 import Web.DOM.ParentNode (querySelectorAll)
@@ -24,22 +23,23 @@ foreign import setStyleProperty :: String → String → String → Effect Unit
 
 handleUpdate :: Event → Effect Unit
 handleUpdate e = do
-  case (currentTarget e) of
-    Just tgt → do
-      case (fromEventTarget tgt) of
-        Just elt → do
-          val ← value elt
-          nam ← name elt
-          suffix ← datasetSizing elt
-          setStyleProperty nam val suffix
-        Nothing → error "no HTMLInputelement"
-    Nothing → error "this shouldn't happen"
+  let element_ = currentTarget e >>= \x → fromEventTarget x
+  case (element_) of
+    Just element → do
+      val ← value element
+      nam ← name element
+      suffix ← datasetSizing element
+      setStyleProperty nam val suffix
+    Nothing → pure unit
 
 
 main :: Effect Unit
 main = do
   doc ← map toParentNode (window >>= document)
-  inputs ← map toEventTarget =<< (querySelectorAll (wrap ".controls input") doc >>= toArray)
+  let inputs = querySelectorAll (wrap ".controls input") doc >>=
+           toArray >>= (toEventTarget <$> _)
+  -- inputs ← querySelectorAll (wrap ".controls input") doc >>=
+  --          toArray >>= (toEventTarget <$> _) >>> pure
   el ← eventListener handleUpdate
-  for_ inputs $ \x → addEventListener (wrap "change") el false (toEventTarget x)
-  for_ inputs $ \x → addEventListener (wrap "mousemove") el false (toEventTarget x)
+  for_ inputs $ addEventListener (wrap "change") el false
+  for_ inputs $ addEventListener (wrap "mousemove") el false
