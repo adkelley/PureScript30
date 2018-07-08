@@ -7,13 +7,12 @@ import Data.Maybe (Maybe(..))
 import Data.Newtype (wrap)
 import Data.String (Pattern(..), contains)
 import Effect (Effect)
-import Web.DOM (NodeList)
 import Web.DOM.DOMTokenList (toggle)
 import Web.DOM.Node (toEventTarget)
 import Web.DOM.NodeList (toArray)
 import Web.DOM.ParentNode (querySelectorAll)
 import Web.Event.Event (Event, currentTarget)
-import Web.Event.EventTarget (EventTarget, addEventListener, eventListener)
+import Web.Event.EventTarget (addEventListener, eventListener)
 import Web.HTML (window)
 import Web.HTML.HTMLDocument (toParentNode)
 import Web.HTML.HTMLElement (classList, fromEventTarget)
@@ -23,10 +22,10 @@ foreign import logIt :: ∀ a. a → Effect Unit
 foreign import propertyName :: Event → Effect String
 
 toggleElement :: String → Event → Effect Boolean
-toggleElement str e = do
+toggleElement str e =
   case (currentTarget e >>= fromEventTarget) of
-    Just x → do
-      tokenList ← classList x
+    Just inputElement → do
+      tokenList ← classList inputElement
       toggle tokenList str
     Nothing → pure false
 

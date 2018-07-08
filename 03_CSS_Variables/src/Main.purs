@@ -23,12 +23,11 @@ foreign import setStyleProperty :: String → String → String → Effect Unit
 
 handleUpdate :: Event → Effect Unit
 handleUpdate e = do
-  let element_ = currentTarget e >>= \x → fromEventTarget x
-  case (element_) of
-    Just element → do
-      val ← value element
-      nam ← name element
-      suffix ← datasetSizing element
+  case (currentTarget e >>= fromEventTarget) of
+    Just inputElement → do
+      val ← value inputElement
+      nam ← name inputElement
+      suffix ← datasetSizing inputElement
       setStyleProperty nam val suffix
     Nothing → pure unit
 
@@ -36,10 +35,8 @@ handleUpdate e = do
 main :: Effect Unit
 main = do
   doc ← map toParentNode (window >>= document)
-  let inputs = querySelectorAll (wrap ".controls input") doc >>=
-           toArray >>= (toEventTarget <$> _)
-  -- inputs ← querySelectorAll (wrap ".controls input") doc >>=
-  --          toArray >>= (toEventTarget <$> _) >>> pure
+  inputs ← querySelectorAll (wrap ".controls input") doc >>=
+           toArray >>= (toEventTarget <$> _) >>> pure
   el ← eventListener handleUpdate
   for_ inputs $ addEventListener (wrap "change") el false
   for_ inputs $ addEventListener (wrap "mousemove") el false
