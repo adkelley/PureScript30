@@ -6,7 +6,8 @@
     "clean": "rimraf output && rimraf dist && rimraf .psc* && rimraf .pulp-cache",
     "build": "pulp --psc-package browserify --to output/bundle.js",
     "install": "psc-package install",
-    "exec": "python -m SimpleHTTPServer 8000 && open http://localhost:8000"
+    "exec": "python -m SimpleHTTPServer 8000 && open http://localhost:8000",
+    "watch": "pulp --psc-package --watch --before clear browserify --to output/bundle.js"
   },
   "private": true,
   "author": [

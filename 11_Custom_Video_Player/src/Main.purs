@@ -3,14 +3,17 @@ module Main where
 import Prelude
 
 import Control.Monad.Maybe.Trans (MaybeT(..), runMaybeT)
+import Data.Foldable (for_)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (wrap)
 import Effect (Effect)
+import Effect.Class.Console (logShow)
 import Effect.Console (log)
 import Effect.Exception (throw)
 import Web.DOM.Element (Element, toEventTarget, toParentNode)
-import Web.DOM.ParentNode (querySelector)
-import Web.Event.Event (Event)
+import Web.DOM.Node (toEventTarget) as WDN
+import Web.DOM.NodeList (toArray)
+import Web.DOM.ParentNode (querySelector, querySelectorAll)
 import Web.Event.EventTarget (EventTarget, addEventListener, eventListener)
 import Web.HTML (window)
 import Web.HTML.HTMLDocument (toParentNode) as HD
@@ -20,10 +23,15 @@ type Elements =  { video :: EventTarget
                  , progress :: Element
                  , progressBar :: Element
                  , toggle :: Element
-                 , skipButtons :: Element
+                 , skipButtons :: Array EventTarget
                  , ranges :: Element
                  }
 
+
+foreign import isVideoPaused :: EventTarget → Boolean
+foreign import playVideo :: EventTarget → Effect Unit
+foreign import pauseVideo :: EventTarget → Effect Unit
+foreign import setTextContent :: Element → String → Effect Unit
 
 getElements :: Effect (Maybe Elements)
 getElements = do
@@ -36,7 +44,8 @@ getElements = do
       progress_ ← MaybeT $ querySelector (wrap ".progress")  player
       progressBar_ ← MaybeT $ querySelector (wrap ".progress__filled") player
       toggle_ ← MaybeT $ querySelector (wrap ".toggle") player
-      skipButtons_ ← MaybeT $ querySelector (wrap "[data-skip]") player
+      skipButtons_ ← MaybeT $ querySelectorAll (wrap "[data-skip]") player >>=
+                              toArray >>= (WDN.toEventTarget <$> _) >>> Just >>> pure
       ranges_ ← MaybeT $ querySelector (wrap ".player__slider") player
       pure { video: video_, progress: progress_
            , progressBar: progressBar_, toggle: toggle_
@@ -45,17 +54,28 @@ getElements = do
     Nothing → pure Nothing
 
 
-togglePlay :: Event → Effect Unit
-togglePlay e = do
-  log "togglePlay"
+togglePlay :: EventTarget → Effect Unit
+togglePlay video = do
+  logShow $ isVideoPaused video
+  if (isVideoPaused video)
+    then playVideo video
+    else pauseVideo video
 
-updateButton :: Event → Effect Unit
-updateButton e = do
-  log "updateButton"
 
-handleProgress :: Event → Effect Unit
-handleProgress e = do
+updateButton :: EventTarget → Element → Effect Unit
+updateButton video toggle =
+  if (isVideoPaused video)
+    then setTextContent toggle "►"
+    else setTextContent toggle "❚ ❚"
+
+
+handleProgress :: EventTarget → Element → Effect Unit
+handleProgress video progressBar = do
   log "handleProgress"
+
+skip :: EventTarget → Effect Unit
+skip video =
+  log "in skip"
 
 main :: Effect Unit
 main = do
@@ -64,11 +84,15 @@ main = do
     Just { video, progress, progressBar
          , toggle, skipButtons, ranges
          } → do
-      tpel ← eventListener \playButton → togglePlay playButton
-      addEventListener (wrap "click") tpel false video
-      ubel ← eventListener \playButton → updateButton playButton
-      addEventListener (wrap "play") ubel false video
-      addEventListener (wrap "pause") ubel false video
-      upel ← eventListener \e → handleProgress e
-      addEventListener (wrap "timeupdate") upel false video
-    Nothing → throw "Check index.html for missing elements"
+      tp ← eventListener \_ → togglePlay video
+      addEventListener (wrap "click") tp false video
+      ub ← eventListener \_ → updateButton video toggle
+      addEventListener (wrap "play") ub false video
+      addEventListener (wrap "pause") ub false video
+      hp ← eventListener \_ → handleProgress video progressBar
+      addEventListener (wrap "timeupdate") hp false video
+
+      addEventListener (wrap "click") tp false (toEventTarget toggle)
+      s ← eventListener \_ → skip video
+      for_ skipButtons $ addEventListener (wrap "click") s false
+    Nothing → throw "Error: check index.html for missing elements"
