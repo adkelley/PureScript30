@@ -1,5 +1,5 @@
 {
-  "name": "untitled",
+  "name": "tut11",
   "set": "psc-0.12.0",
   "source": "https://github.com/purescript/package-sets.git",
   "depends": [
@@ -8,6 +8,8 @@
     "effect",
     "prelude",
     "web-html",
-    "web-dom"
+    "web-dom",
+    "globals",
+    "numbers"
   ]
 }
