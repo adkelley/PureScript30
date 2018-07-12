@@ -9,6 +9,7 @@
     "prelude",
     "web-html",
     "web-dom",
+    "web-uievents",
     "globals",
     "numbers"
   ]

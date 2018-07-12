@@ -64,6 +64,7 @@ exports.setVideoPlaybackRate = function(video) {
   return function (rate) {
     return function () {
       video.playbackRate = rate;
+      return {};
     };
   };
 };
@@ -73,20 +74,35 @@ exports.setVideoVolume = function(video) {
   return function (volume) {
     return function () {
       video.volume = volume;
+      return {};
     };
   };
 };
 
-exports.videoDuration = function(video) {
+exports.videoDuration = function (video) {
   return function () {
     return video.duration;
   };
 };
 
-exports.setFlexBasis = function(element) {
+exports.updateProgressBar = function(element) {
   return function (percent) {
     return function () {
       element.style.flexBasis = percent + "%";
     };
   };
 };
+
+
+exports.offsetX = function(mouseEvent) {
+  return function () {
+    return mouseEvent.offsetX;
+  }
+}
+
+
+exports.offsetWidth = function (element) {
+  return function () {
+    return element.offsetWidth;
+  }
+}

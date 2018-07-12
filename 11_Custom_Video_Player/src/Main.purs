@@ -10,9 +10,9 @@ import Data.Newtype (wrap)
 import Data.Number.Format (toString)
 import Effect (Effect)
 import Effect.Exception (throw)
-import Effect.Ref (new)
+import Effect.Ref (new, read, write)
 import Global (readFloat)
-import Web.DOM.Element (Element, toEventTarget, toParentNode)
+import Web.DOM.Element (Element, fromEventTarget, toEventTarget, toParentNode)
 import Web.DOM.Node (toEventTarget) as WDN
 import Web.DOM.NodeList (toArray)
 import Web.DOM.ParentNode (querySelector, querySelectorAll)
@@ -21,9 +21,10 @@ import Web.Event.EventTarget (EventTarget, addEventListener, eventListener)
 import Web.HTML (window)
 import Web.HTML.HTMLDocument (toParentNode) as HD
 import Web.HTML.Window (document)
+import Web.UIEvent.MouseEvent (MouseEvent, fromEvent)
 
 type Elements =  { video :: EventTarget
-                 , progress :: Element
+                 , progress :: EventTarget
                  , progressBar :: Element
                  , toggle :: Element
                  , skipButtons :: Array EventTarget
@@ -42,7 +43,9 @@ foreign import eventTargetName :: EventTarget → Effect String
 foreign import eventTargetValue :: EventTarget → Effect Number
 foreign import setVideoPlaybackRate :: EventTarget → Number → Effect Unit
 foreign import setVideoVolume :: EventTarget → Number → Effect Unit
-foreign import setFlexBasis :: Element → String → Effect Unit
+foreign import updateProgressBar :: Element → String → Effect Unit
+foreign import offsetX :: MouseEvent → Effect Number
+foreign import offsetWidth :: Element → Effect Number
 
 foreign import setTextContent :: Element → String → Effect Unit
 
@@ -57,7 +60,7 @@ getElements = do
   case player_ of
     Just player → runMaybeT $ do
       video_ ← MaybeT $ querySelector (wrap ".viewer") player >>= (toEventTarget <$> _) >>> pure
-      progress_ ← MaybeT $ querySelector (wrap ".progress")  player
+      progress_ ← MaybeT $ querySelector (wrap ".progress") player >>= (toEventTarget <$> _) >>> pure
       progressBar_ ← MaybeT $ querySelector (wrap ".progress__filled") player
       toggle_ ← MaybeT $ querySelector (wrap ".toggle") player
       skipButtons_ ← MaybeT $ querySelectorAll (wrap "[data-skip]") player >>=
@@ -90,7 +93,8 @@ handleProgress video progressBar = do
   currentTime ← videoCurrentTime video
   duration ← videoDuration video
   let percent = (currentTime / duration) * 100.0
-  setFlexBasis progressBar (toString percent)
+  updateProgressBar progressBar $ toString percent
+
 
 
 skip :: EventTarget → Event → Effect Unit
@@ -101,6 +105,7 @@ skip video button = do
       skipTime <- videoSkipTime buttonEventTarget
       setVideoCurrentTime video $ currentTime + (readFloat skipTime)
     Nothing → pure unit
+
 
 -- | TODO: Use enumeration to determine volume or playback rate
 handleRangeUpdate :: EventTarget → Event → Effect Unit
@@ -114,6 +119,19 @@ handleRangeUpdate video slider = do
         else setVideoVolume video value
     Nothing → pure unit
 
+
+scrub :: EventTarget → EventTarget → Event → Effect Unit
+scrub video progress event = do
+  case (fromEvent event) of
+    Just mouseEvent → do
+      x ← offsetX mouseEvent
+      case (fromEventTarget progress) of
+        Just progressElement → do
+          width ← offsetWidth progressElement
+          duration ← videoDuration video
+          setVideoCurrentTime video $ (x / width) * duration
+        Nothing → pure unit
+    Nothing → pure unit
 
 
 main :: Effect Unit
@@ -140,12 +158,17 @@ main = do
       rangeMouseMove ← eventListener \e → handleRangeUpdate video e
       for_ ranges $ addEventListener (wrap "mousemove") rangeMouseMove false
 
-      -- mousedown_ ← new false
-      -- scrubClick ← eventListener \e → video progress e
-      -- addEventListener (wrap "click") scrubClick false progress
-      -- scrubMouseMove ← \e → do
-      --   mousedown ← read mouseDown_
-      --   if mousedown
-      --     then
-
+      mousedown_ ← new false
+      scrubClick ← eventListener \e → scrub video progress e
+      addEventListener (wrap "click") scrubClick false progress
+      mousedownTrue ← eventListener \_ → write true mousedown_
+      addEventListener (wrap "mousedown") mousedownTrue false progress
+      mousedownFalse ← eventListener \_ → write false mousedown_
+      addEventListener (wrap "mouseup") mousedownFalse false progress
+      scrubMouseMove ← eventListener \e → do
+        mousedown ← read mousedown_
+        if mousedown
+          then scrub video progress e
+          else pure unit
+      addEventListener (wrap "mousemove") scrubMouseMove false progress
     Nothing → throw "Error: check index.html for missing elements"
